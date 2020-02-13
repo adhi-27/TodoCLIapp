@@ -9,25 +9,26 @@ class Todo < ActiveRecord::Base
   end
 
   def self.mark_as_complete!(todo_id)
-    all.each do |todo|
-      if todo.id == todo_id
-        todo.completed = true
-        todo.save
-        return todo
-      end
-    end
+    todo = find(todo_id)
+    todo.completed = true
+    todo.save
+    todo
   end
 
-  def overdue?
-    due_date < Date.today
+  def self.overdue
+    all.where("due_date < ?", Date.today)
   end
 
   def due_today?
     due_date == Date.today
   end
 
-  def due_later?
-    due_date > Date.today
+  def self.due_today
+    all.where("due_date = ?", Date.today)
+  end
+
+  def self.due_later
+    all.where("due_date > ?", Date.today)
   end
 
   def to_displayable_string
@@ -40,26 +41,14 @@ class Todo < ActiveRecord::Base
     puts "My Todo-list\n\n"
 
     puts "Overdue\n"
-    all.map do |todo|
-      if todo.overdue?
-        puts todo.to_displayable_string
-      end
-    end
+    puts overdue.map { |todo| todo.to_displayable_string }
     puts "\n\n"
 
     puts "Due Today\n"
-    all.map do |todo|
-      if todo.due_today?
-        puts todo.to_displayable_string
-      end
-    end
+    puts due_today.map { |todo| todo.to_displayable_string }
     puts "\n\n"
 
     puts "Due Later\n"
-    all.map do |todo|
-      if todo.due_later?
-        puts todo.to_displayable_string
-      end
-    end
+    puts due_later.map { |todo| todo.to_displayable_string }
   end
 end
